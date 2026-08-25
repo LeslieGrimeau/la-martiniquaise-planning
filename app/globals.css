@@ -24,3 +24,44 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 🐦 Animation du colibri */
+
+@keyframes colibriVol {
+  0% {
+    transform: translateX(-140px) translateY(10px) rotate(-3deg) scale(1);
+  }
+
+  15% {
+    transform: translateX(10vw) translateY(-8px) rotate(2deg) scaleY(0.94);
+  }
+
+  30% {
+    transform: translateX(25vw) translateY(5px) rotate(-2deg) scaleY(1.05);
+  }
+
+  45% {
+    transform: translateX(40vw) translateY(-10px) rotate(2deg) scaleY(0.94);
+  }
+
+  60% {
+    transform: translateX(55vw) translateY(4px) rotate(-2deg) scaleY(1.05);
+  }
+
+  75% {
+    transform: translateX(70vw) translateY(-8px) rotate(2deg) scaleY(0.94);
+  }
+
+  90% {
+    transform: translateX(85vw) translateY(5px) rotate(-2deg) scaleY(1.03);
+  }
+
+  100% {
+    transform: translateX(110vw) translateY(-5px) rotate(2deg) scaleY(1);
+  }
+}
+
+.colibri-animation {
+  animation: colibriVol 14s linear infinite;
+  will-change: transform;
+}
