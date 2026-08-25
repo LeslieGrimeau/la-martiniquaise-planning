@@ -87,7 +87,7 @@ export default function Home() {
   <div className="relative mx-auto max-w-4xl px-12 sm:px-20 md:px-32">
 
     <p className="text-xs font-bold uppercase tracking-[0.35em] text-pink-400 md:text-sm">
-      🇲🇶 Gamer • Créole • Passionnée
+      🇲🇶 Gamer • Créole • Passion
     </p>
 
     <h1 className="mt-4 bg-gradient-to-r from-yellow-300 via-pink-400 to-purple-500 bg-clip-text text-4xl font-black uppercase tracking-tight text-transparent sm:text-5xl md:text-7xl">
@@ -276,7 +276,7 @@ export default function Home() {
 </section>
 
           {/* 5 — INFOS DU MOMENT */}
-<section className="rounded-3xl border border-pink-500/40 bg-white/[0.03] p-5 shadow-[0_0_40px_rgba(236,72,153,0.08)] md:p-7">
+<section className="rounded-3xl border border-pink-500/40 bg-white/[0.03] p-4 shadow-[0_0_30px_rgba(236,72,153,0.08)] md:p-5">
   <SectionTitle
     number="05"
     emoji="📢"
@@ -284,7 +284,7 @@ export default function Home() {
   />
 
   {/* Annonces */}
-  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+  <div className="mt-4 grid gap-3 sm:grid-cols-2">
     {currentInfos.map((info) => (
       <InfoItem
         key={info.title}
@@ -295,9 +295,26 @@ export default function Home() {
     ))}
   </div>
 
+  {/* Code créateur Fortnite */}
+<div className="mt-4 rounded-2xl border border-yellow-400/40 bg-gradient-to-r from-yellow-400/10 via-pink-500/10 to-purple-500/10 p-4 text-center">
+  <p className="text-sm font-black leading-relaxed text-yellow-300 md:text-base">
+    😁 Hooo les gars, utilisez mon code créateur FORTNITE dans la boutique sinon je vous ban 😁
+  </p>
+
+  <div className="mt-3 flex justify-center">
+    <Image
+      src="/images/decorations/code-createur.png"
+      alt="Code créateur Fortnite LILI9724"
+      width={300}
+      height={100}
+      className="h-auto w-[220px] object-contain sm:w-[260px] md:w-[300px]"
+    />
+  </div>
+</div>
+
   {/* Mise à jour */}
-  <div className="mt-5 flex items-center justify-center rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-    <p className="text-xs text-gray-500">
+  <div className="mt-3 text-center">
+    <p className="text-[10px] text-gray-500">
       🔄 Dernière mise à jour :{" "}
       <span className="font-semibold text-pink-300">
         {lastUpdate}
@@ -306,6 +323,7 @@ export default function Home() {
   </div>
 </section>
 </div>
+
 
         {/* 6 — JOUER */}
         <section className="rounded-3xl border border-blue-500/40 bg-white/[0.03] p-5 shadow-[0_0_40px_rgba(59,130,246,0.08)] md:p-7">
