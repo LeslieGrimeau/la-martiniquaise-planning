@@ -20,7 +20,9 @@ function getCurrentDay() {
     "Samedi",
   ];
 
-  return days[new Date().getDay()];
+  const now = new Date();
+
+  return days[now.getDay()];
 }
 
 export default function Home() {
