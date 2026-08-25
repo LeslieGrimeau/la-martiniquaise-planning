@@ -20,7 +20,11 @@ function getCurrentDay() {
     "Samedi",
   ];
 
-  return days[new Date().getDay()];
+  const franceDate = new Date().toLocaleString("en-US", {
+    timeZone: "Europe/Paris",
+  });
+
+  return days[new Date(franceDate).getDay()];
 }
 export const dynamic = "force-dynamic";
 
@@ -29,9 +33,7 @@ export default function Home() {
     console.log("Jour détecté :", currentDay);
   return (
     <main className="min-h-screen bg-[#050509] text-white">
-      <p className="fixed left-2 top-2 z-[9999] rounded bg-red-500 px-3 py-1 text-xs font-bold text-white">
-  DEBUG : {currentDay}
-</p>
+     
 
       {/* 🌴 PALMIER DÉCORATIF */}
 <div className="pointer-events-none fixed bottom-0 left-0 z-0">
