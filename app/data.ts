@@ -131,24 +131,28 @@ export const weeklySchedule = [
 
 export const subscriberRewards = [
   {
+    level: 5,
+    reward: "Vos défis en game",
+  },
+  {
     level: 10,
-    reward: "Récompense à définir",
+    reward: "Intégration d'un nouveau jeu au planning",
   },
   {
     level: 15,
-    reward: "Récompense à définir",
+    reward: "Jeu d'arme",
   },
   {
     level: 20,
-    reward: "Récompense à définir",
+    reward: "Game du silence / Hmm hmmm",
   },
   {
     level: 25,
-    reward: "Récompense à définir",
+    reward: "Gagner 5 Box Saveurs Créoles lors d'un live cuisine",
   },
   {
     level: 30,
-    reward: "Récompense à définir",
+    reward: "Live 24h",
   },
 ];
 

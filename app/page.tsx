@@ -575,7 +575,7 @@ function RewardCard({
   reward: string;
 }) {
   return (
-    <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-4 text-center">
+    <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-4 text-center transition-all duration-300 hover:border-pink-400/50 hover:bg-purple-500/10">
       <p className="text-2xl font-black text-purple-300">
         {level}
       </p>
@@ -584,11 +584,17 @@ function RewardCard({
         Subs
       </p>
 
-      <div className="my-3 text-2xl">
-        🎁
+      <div className="my-3 flex justify-center">
+        <Image
+          src="/images/decorations/recompense-sub.png"
+          alt="Récompense"
+          width={90}
+          height={90}
+          className="h-20 w-20 object-contain"
+        />
       </div>
 
-      <p className="text-xs text-gray-300">
+      <p className="text-xs leading-relaxed text-gray-300">
         {reward}
       </p>
     </div>
