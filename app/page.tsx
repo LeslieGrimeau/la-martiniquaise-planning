@@ -1,9 +1,10 @@
 import Image from "next/image";
+import { getPlanning } from "@/lib/planning";
+import { sql } from "@/lib/db";
 import {
   weeklySchedule,
   subscriberRewards,
-  monthlyGoals,
-  games,
+    games,
   mainGame,
   currentInfos,
   lastUpdate,
@@ -28,9 +29,66 @@ function getCurrentDay() {
 }
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-    const currentDay = getCurrentDay();
-    console.log("Jour détecté :", currentDay);
+export default async function Home() {
+  const currentDay = getCurrentDay();
+  const weeklySchedule = await getPlanning();
+
+  const objectivesResult = await sql`
+    SELECT
+      subs_target,
+      subs_current,
+      followers_target,
+      followers_current,
+      viewers_target,
+      viewers_current
+    FROM objectifs
+    ORDER BY id DESC
+    LIMIT 1
+  `;
+
+  const objective = objectivesResult[0];
+
+  function getPercentage(current: number, target: number) {
+    if (target <= 0) return 0;
+
+    return Math.min(
+      100,
+      Math.max(0, (current / target) * 100)
+    );
+  }
+
+  const monthlyGoals = objective
+    ? [
+        {
+          label: "Abonnés Twitch",
+          current: String(objective.subs_current),
+          target: String(objective.subs_target),
+          progress: getPercentage(
+            Number(objective.subs_current),
+            Number(objective.subs_target)
+          ),
+        },
+        {
+          label: "Followers Twitch",
+          current: String(objective.followers_current),
+          target: String(objective.followers_target),
+          progress: getPercentage(
+            Number(objective.followers_current),
+            Number(objective.followers_target)
+          ),
+        },
+        {
+          label: "Moyenne de viewers",
+          current: String(objective.viewers_current),
+          target: String(objective.viewers_target),
+          progress: getPercentage(
+            Number(objective.viewers_current),
+            Number(objective.viewers_target)
+          ),
+        },
+      ]
+    : [];
+
   return (
     <main className="min-h-screen bg-[#050509] text-white">
      
@@ -385,6 +443,31 @@ export default function Home() {
           🇲🇶 La Martiniquaise • Merci de faire partie de l'aventure ❤️
         </p>
       </footer>
+      {/* ☀️ ACCÈS ADMIN */}
+<a
+  href="/admin"
+  aria-label="Accéder à l'administration"
+  className="group fixed right-4 top-4 z-[9999] md:right-8 md:top-6"
+>
+  <div className="relative">
+
+    {/* Halo lumineux */}
+    <div className="absolute inset-2 rounded-full bg-yellow-400/20 blur-2xl transition-all duration-300 group-hover:bg-yellow-400/40" />
+
+    {/* Soleil */}
+    <img
+      src="/images/decorations/soleil.png"
+      alt="Administration"
+      className="relative block w-28 object-contain drop-shadow-[0_0_18px_rgba(250,204,21,0.55)] transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 md:w-36"
+    />
+
+    {/* Texte au survol */}
+    <span className="absolute right-0 top-full mt-1 whitespace-nowrap rounded-full border border-yellow-400/30 bg-[#09090f]/95 px-3 py-1.5 text-xs font-bold text-yellow-300 opacity-0 shadow-xl transition-opacity duration-300 group-hover:opacity-100">
+      ⚙️ Administration
+    </span>
+
+  </div>
+</a>
     </main>
   );
 }
