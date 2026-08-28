@@ -303,17 +303,47 @@ export default async function AdminPage({
   </div>
 </a>
 
-          <AdminCard
-            emoji="🎮"
-            title="Jeux"
-            text="Gérer les jeux et le jeu à l'honneur."
-          />
+          <a
+  href="/admin/jeux"
+  className="group block rounded-3xl border border-cyan-500/30 bg-white/[0.03] p-6 text-left transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/60 hover:bg-cyan-500/10"
+>
+  <div className="flex items-center gap-4">
+    <span className="text-4xl">
+      🎮
+    </span>
 
-          <AdminCard
-            emoji="📢"
-            title="Infos du moment"
-            text="Modifier les informations affichées."
-          />
+    <div>
+      <h2 className="text-lg font-black text-white">
+        Jeux
+      </h2>
+
+      <p className="mt-1 text-sm leading-relaxed text-gray-400">
+        Gérer les jeux et le jeu à l'honneur.
+      </p>
+    </div>
+  </div>
+</a>
+
+          <a
+  href="/admin/infos"
+  className="group block rounded-3xl border border-purple-500/30 bg-white/[0.03] p-6 text-left transition-all duration-300 hover:-translate-y-1 hover:border-pink-400/60 hover:bg-purple-500/10"
+>
+  <div className="flex items-center gap-4">
+    <span className="text-4xl">
+      📢
+    </span>
+
+    <div>
+      <h2 className="text-lg font-black text-white">
+        Infos du moment
+      </h2>
+
+      <p className="mt-1 text-sm leading-relaxed text-gray-400">
+        Gérer les informations affichées sur l'accueil.
+      </p>
+    </div>
+  </div>
+</a>
 
           <AdminCard
             emoji="🎧"
