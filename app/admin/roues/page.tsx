@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import WheelSectionSelector from "./WheelSectionSelector";
 
-
 import { sql } from "@/lib/db";
 
 const COOKIE_NAME = "admin_session";
@@ -23,6 +22,13 @@ type WheelItem = {
   label: string;
   sort_order: number;
 };
+
+type Section =
+  | "questions"
+  | "subs"
+  | "fortnite"
+  | "motorfest"
+  | "callofduty";
 
 function isValidSession(token: string | undefined) {
   if (!token) return false;
@@ -60,6 +66,26 @@ function isValidSession(token: string | undefined) {
 }
 
 /* =========================================================
+   SECTION CORRESPONDANT À UNE ROUE
+========================================================= */
+
+function getWheelSection(wheelId: number): Section {
+  if (wheelId === 1) return "questions";
+
+  if ([2, 3, 4].includes(wheelId)) {
+    return "subs";
+  }
+
+  if (wheelId === 5) return "fortnite";
+
+  if (wheelId === 6) return "motorfest";
+
+  if (wheelId === 7) return "callofduty";
+
+  return "questions";
+}
+
+/* =========================================================
    SAUVEGARDE / AJOUT
 ========================================================= */
 
@@ -80,8 +106,13 @@ async function saveWheelItems(formData: FormData) {
     redirect("/admin/roues?error=1");
   }
 
+  const section = getWheelSection(wheelId);
+
   try {
-    /* AJOUT */
+    /* =====================================================
+       AJOUT
+    ===================================================== */
+
     if (operation === "add") {
       const result = await sql`
         SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order
@@ -89,7 +120,9 @@ async function saveWheelItems(formData: FormData) {
         WHERE wheel_id = ${wheelId}
       `;
 
-      const nextOrder = Number(result[0]?.next_order ?? 1);
+      const nextOrder = Number(
+        result[0]?.next_order ?? 1
+      );
 
       await sql`
         INSERT INTO wheel_items (
@@ -107,25 +140,33 @@ async function saveWheelItems(formData: FormData) {
       revalidatePath("/admin/roues");
 
       redirect(
-        `/admin/roues?saved=1&section=${
-          wheelId === 1 ? "questions" : "subs"
-        }`
+        `/admin/roues?saved=1&section=${section}`
       );
     }
-    
-        /* SAUVEGARDE */
+
+    /* =====================================================
+       SAUVEGARDE
+    ===================================================== */
+
     const itemIds = formData.getAll("itemId");
     const labels = formData.getAll("label");
 
     if (itemIds.length !== labels.length) {
-      redirect("/admin/roues?error=1");
+      redirect(
+        `/admin/roues?error=1&section=${section}`
+      );
     }
 
     for (let i = 0; i < itemIds.length; i++) {
       const itemId = Number(itemIds[i]);
-      const label = String(labels[i] ?? "").trim();
+      const label = String(
+        labels[i] ?? ""
+      ).trim();
 
-      if (!Number.isFinite(itemId) || !label) {
+      if (
+        !Number.isFinite(itemId) ||
+        !label
+      ) {
         continue;
       }
 
@@ -138,18 +179,30 @@ async function saveWheelItems(formData: FormData) {
     }
 
     revalidatePath("/admin/roues");
+
   } catch (error) {
-    console.error("Erreur sauvegarde roue :", error);
-    redirect("/admin/roues?error=1");
+    console.error(
+      "Erreur sauvegarde roue :",
+      error
+    );
+
+    redirect(
+      `/admin/roues?error=1&section=${section}`
+    );
   }
 
   redirect(
-    `/admin/roues?saved=1&section=${
-      wheelId === 1 ? "questions" : "subs"
-    }`
+    `/admin/roues?saved=1&section=${section}`
   );
 }
-async function deleteWheelItem(formData: FormData) {
+
+/* =========================================================
+   SUPPRESSION
+========================================================= */
+
+async function deleteWheelItem(
+  formData: FormData
+) {
   "use server";
 
   const cookieStore = await cookies();
@@ -159,12 +212,22 @@ async function deleteWheelItem(formData: FormData) {
     redirect("/admin");
   }
 
-  const wheelId = Number(formData.get("wheelId"));
-  const itemId = Number(formData.get("deleteItemId"));
+  const wheelId = Number(
+    formData.get("wheelId")
+  );
 
-  if (!Number.isFinite(wheelId) || !Number.isFinite(itemId)) {
+  const itemId = Number(
+    formData.get("deleteItemId")
+  );
+
+  if (
+    !Number.isFinite(wheelId) ||
+    !Number.isFinite(itemId)
+  ) {
     redirect("/admin/roues?error=1");
   }
+
+  const section = getWheelSection(wheelId);
 
   try {
     await sql`
@@ -174,15 +237,20 @@ async function deleteWheelItem(formData: FormData) {
     `;
 
     revalidatePath("/admin/roues");
+
   } catch (error) {
-    console.error("Erreur suppression élément :", error);
-    redirect("/admin/roues?error=1");
+    console.error(
+      "Erreur suppression élément :",
+      error
+    );
+
+    redirect(
+      `/admin/roues?error=1&section=${section}`
+    );
   }
 
   redirect(
-    `/admin/roues?saved=1&section=${
-      wheelId === 1 ? "questions" : "subs"
-    }`
+    `/admin/roues?saved=1&section=${section}`
   );
 }
 
@@ -208,8 +276,20 @@ export default async function WheelsAdminPage({
 
   const params = await searchParams;
 
-  const selectedSection =
-    params.section === "subs" ? "subs" : "questions";
+  const selectedSection: Section =
+    params.section === "subs"
+      ? "subs"
+      : params.section === "fortnite"
+        ? "fortnite"
+        : params.section === "motorfest"
+          ? "motorfest"
+          : params.section === "callofduty"
+            ? "callofduty"
+            : "questions";
+
+  /* =====================================================
+     RÉCUPÉRATION DES ROUES
+  ===================================================== */
 
   const wheelRows = await sql`
     SELECT
@@ -232,35 +312,63 @@ export default async function WheelsAdminPage({
     ORDER BY wheel_id ASC, sort_order ASC
   `;
 
-  const wheels: Wheel[] = wheelRows.map((wheel) => ({
-    id: Number(wheel.id),
-    name: String(wheel.name),
-    type: String(wheel.type),
-    trigger_type: String(wheel.trigger_type),
-    active: Boolean(wheel.active),
-  }));
+  const wheels: Wheel[] =
+    wheelRows.map((wheel) => ({
+      id: Number(wheel.id),
+      name: String(wheel.name),
+      type: String(wheel.type),
+      trigger_type: String(
+        wheel.trigger_type
+      ),
+      active: Boolean(wheel.active),
+    }));
 
-  const items: WheelItem[] = itemRows.map((item) => ({
-    id: Number(item.id),
-    wheel_id: Number(item.wheel_id),
-    label: String(item.label),
-    sort_order: Number(item.sort_order),
-  }));
+  const items: WheelItem[] =
+    itemRows.map((item) => ({
+      id: Number(item.id),
+      wheel_id: Number(item.wheel_id),
+      label: String(item.label),
+      sort_order: Number(
+        item.sort_order
+      ),
+    }));
+
+  /* =====================================================
+     ROUES
+  ===================================================== */
 
   const questionsWheel = wheels.find(
     (wheel) => wheel.id === 1
   );
 
-  const subsWheels = wheels.filter((wheel) =>
-    [2, 3, 4].includes(wheel.id)
+  const subsWheels = wheels.filter(
+    (wheel) =>
+      [2, 3, 4].includes(wheel.id)
+  );
+
+  const fortniteWheel = wheels.find(
+    (wheel) => wheel.id === 5
+  );
+
+  const motorfestWheel = wheels.find(
+    (wheel) => wheel.id === 6
+  );
+
+  const callOfDutyWheel = wheels.find(
+    (wheel) => wheel.id === 7
   );
 
   return (
     <main className="min-h-screen bg-[#050509] px-4 py-8 text-white md:px-8">
+
       <div className="mx-auto max-w-6xl">
 
-        {/* HEADER */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
         <header className="mb-8">
+
           <a
             href="/admin"
             className="text-sm font-semibold text-pink-300 transition hover:text-pink-200"
@@ -269,6 +377,7 @@ export default async function WheelsAdminPage({
           </a>
 
           <div className="mt-5">
+
             <p className="text-sm font-bold uppercase tracking-[0.3em] text-pink-300">
               🔐 Administration
             </p>
@@ -280,10 +389,15 @@ export default async function WheelsAdminPage({
             <p className="mt-3 text-gray-400">
               Configure les roues utilisées pendant tes lives.
             </p>
+
           </div>
+
         </header>
 
-        {/* MESSAGES */}
+        {/* =================================================
+            MESSAGES
+        ================================================= */}
+
         {params.saved === "1" && (
           <div className="mb-6 rounded-2xl border border-green-500/30 bg-green-500/10 px-5 py-4 font-semibold text-green-300">
             ✅ Les modifications ont été enregistrées !
@@ -296,44 +410,115 @@ export default async function WheelsAdminPage({
           </div>
         )}
 
+        {/* =================================================
+            SELECTEUR
+        ================================================= */}
+
         <WheelSectionSelector
-  selectedSection={selectedSection}
-/>
+          selectedSection={selectedSection}
+        />
 
-        {/* ROUE QUESTIONS */}
-        {selectedSection === "questions" && questionsWheel && (
-          <WheelEditor
-            wheel={questionsWheel}
-            items={items.filter(
-              (item) => item.wheel_id === questionsWheel.id
-            )}
-            saveAction={saveWheelItems}
-          />
-        )}
+        {/* =================================================
+            ROUE QUESTIONS
+        ================================================= */}
 
-        {/* ROUES SUBS */}
+        {selectedSection === "questions" &&
+          questionsWheel && (
+            <WheelEditor
+              wheel={questionsWheel}
+              items={items.filter(
+                (item) =>
+                  item.wheel_id ===
+                  questionsWheel.id
+              )}
+              saveAction={saveWheelItems}
+            />
+          )}
+
+        {/* =================================================
+            ROUES SUBS
+        ================================================= */}
+
         {selectedSection === "subs" && (
           <div className="grid gap-8">
+
             {subsWheels.map((wheel) => (
               <WheelEditor
                 key={wheel.id}
                 wheel={wheel}
                 items={items.filter(
-                  (item) => item.wheel_id === wheel.id
+                  (item) =>
+                    item.wheel_id ===
+                    wheel.id
                 )}
-                saveAction={saveWheelItems}
+                saveAction={
+                  saveWheelItems
+                }
               />
             ))}
+
           </div>
         )}
 
+        {/* =================================================
+            FORTNITE
+        ================================================= */}
+
+        {selectedSection === "fortnite" &&
+          fortniteWheel && (
+            <WheelEditor
+              wheel={fortniteWheel}
+              items={items.filter(
+                (item) =>
+                  item.wheel_id ===
+                  fortniteWheel.id
+              )}
+              saveAction={saveWheelItems}
+            />
+          )}
+
+        {/* =================================================
+            MOTORFEST
+        ================================================= */}
+
+        {selectedSection === "motorfest" &&
+          motorfestWheel && (
+            <WheelEditor
+              wheel={motorfestWheel}
+              items={items.filter(
+                (item) =>
+                  item.wheel_id ===
+                  motorfestWheel.id
+              )}
+              saveAction={saveWheelItems}
+            />
+          )}
+
+        {/* =================================================
+            CALL OF DUTY
+        ================================================= */}
+
+        {selectedSection === "callofduty" &&
+          callOfDutyWheel && (
+            <WheelEditor
+              wheel={callOfDutyWheel}
+              items={items.filter(
+                (item) =>
+                  item.wheel_id ===
+                  callOfDutyWheel.id
+              )}
+              saveAction={saveWheelItems}
+            />
+          )}
+
       </div>
+
     </main>
   );
 }
 
 /* =========================================================
-   EDITEUR
+   EDITEUR D'UNE ROUE
 ========================================================= */
 
 function WheelEditor({
@@ -343,7 +528,9 @@ function WheelEditor({
 }: {
   wheel: Wheel;
   items: WheelItem[];
-  saveAction: (formData: FormData) => Promise<void>;
+  saveAction: (
+    formData: FormData
+  ) => Promise<void>;
 }) {
   return (
     <form action={saveAction}>
@@ -361,70 +548,94 @@ function WheelEditor({
             "linear-gradient(135deg, #ec4899, #f472b6, #c084fc, #ec4899)",
         }}
       >
+
         <div className="rounded-[22px] bg-[#09090f] p-6 md:p-8">
 
           {/* TITRE */}
+
           <div className="mb-6">
+
             <h2 className="text-2xl font-black">
-              {getWheelEmoji(wheel.type)} {wheel.name}
+              {getWheelEmoji(
+                wheel.type
+              )}{" "}
+              {wheel.name}
             </h2>
 
             <p className="mt-1 text-sm text-gray-400">
-              {getWheelDescription(wheel.type)}
+              {getWheelDescription(
+                wheel.type
+              )}
             </p>
+
           </div>
 
           {/* ELEMENTS */}
+
           <div className="space-y-4">
 
-            {items.map((item, index) => (
-  <div
-    key={item.id}
-    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-  >
-    <div className="flex items-start gap-3">
+            {items.map(
+              (item, index) => (
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
 
-      <div className="min-w-0 flex-1">
-        <label
-          htmlFor={`wheel-${wheel.id}-item-${item.id}`}
-          className="mb-2 block text-xs font-bold uppercase tracking-wider text-pink-300"
-        >
-          {getItemLabel(wheel.type, index)}
-        </label>
+                  <div className="flex items-start gap-3">
 
-        <input
-          id={`wheel-${wheel.id}-item-${item.id}`}
-          name="label"
-          type="text"
-          defaultValue={item.label}
-          className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-pink-400/60"
-        />
+                    <div className="min-w-0 flex-1">
 
-        <input
-          type="hidden"
-          name="itemId"
-          value={item.id}
-        />
-      </div>
+                      <label
+                        htmlFor={`wheel-${wheel.id}-item-${item.id}`}
+                        className="mb-2 block text-xs font-bold uppercase tracking-wider text-pink-300"
+                      >
+                        {getItemLabel(
+                          wheel.type,
+                          index
+                        )}
+                      </label>
 
-      <button
-  type="submit"
-  formAction={deleteWheelItem}
-  name="deleteItemId"
-  value={item.id}
-  className="mt-6 shrink-0 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-3 text-red-300 transition hover:bg-red-500/20"
-  title="Supprimer"
->
-  🗑️
-</button>
+                      <input
+                        id={`wheel-${wheel.id}-item-${item.id}`}
+                        name="label"
+                        type="text"
+                        defaultValue={
+                          item.label
+                        }
+                        className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-pink-400/60"
+                      />
 
-    </div>
-  </div>
-))}
+                      <input
+                        type="hidden"
+                        name="itemId"
+                        value={item.id}
+                      />
+
+                    </div>
+
+                    <button
+                      type="submit"
+                      formAction={
+                        deleteWheelItem
+                      }
+                      name="deleteItemId"
+                      value={item.id}
+                      className="mt-6 shrink-0 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-3 text-red-300 transition hover:bg-red-500/20"
+                      title="Supprimer"
+                    >
+                      🗑️
+                    </button>
+
+                  </div>
+
+                </div>
+              )
+            )}
 
           </div>
 
           {/* BOUTONS */}
+
           <div className="mt-8 flex flex-wrap justify-between gap-4">
 
             <button
@@ -448,6 +659,7 @@ function WheelEditor({
           </div>
 
         </div>
+
       </section>
 
     </form>
@@ -455,23 +667,40 @@ function WheelEditor({
 }
 
 /* =========================================================
-   HELPERS
+   EMOJIS
 ========================================================= */
 
 function getWheelEmoji(type: string) {
   switch (type) {
     case "questions":
       return "🎡";
+
     case "action_verite":
       return "🎭";
+
     case "action":
       return "🔥";
+
     case "verite":
       return "🤫";
+
+    case "fortnite":
+      return "🎮";
+
+    case "motorfest":
+      return "🏎️";
+
+    case "call_of_duty":
+      return "🔫";
+
     default:
       return "🎡";
   }
 }
+
+/* =========================================================
+   DESCRIPTIONS
+========================================================= */
 
 function getWheelDescription(type: string) {
   switch (type) {
@@ -487,18 +716,36 @@ function getWheelDescription(type: string) {
     case "verite":
       return "Questions de la roue Vérité.";
 
+    case "fortnite":
+      return "Défis Fortnite à relever pendant les lives.";
+
+    case "motorfest":
+      return "Défis The Crew Motorfest à relever pendant les lives.";
+
+    case "call_of_duty":
+      return "Défis Call of Duty à relever pendant les lives.";
+
     default:
       return "Configuration de la roue.";
   }
 }
 
-function getItemLabel(type: string, index: number) {
+/* =========================================================
+   LABELS DES ELEMENTS
+========================================================= */
+
+function getItemLabel(
+  type: string,
+  index: number
+) {
   if (type === "questions") {
     return `Question ${index + 1}`;
   }
 
   if (type === "action_verite") {
-    return index === 0 ? "Résultat 1" : "Résultat 2";
+    return index === 0
+      ? "Résultat 1"
+      : "Résultat 2";
   }
 
   if (type === "action") {
@@ -507,6 +754,18 @@ function getItemLabel(type: string, index: number) {
 
   if (type === "verite") {
     return `Vérité ${index + 1}`;
+  }
+
+  if (type === "fortnite") {
+    return `Défi Fortnite ${index + 1}`;
+  }
+
+  if (type === "motorfest") {
+    return `Défi Motorfest ${index + 1}`;
+  }
+
+  if (type === "call_of_duty") {
+    return `Défi Call of Duty ${index + 1}`;
   }
 
   return `Élément ${index + 1}`;

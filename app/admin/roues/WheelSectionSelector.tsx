@@ -1,7 +1,14 @@
 "use client";
 
+type Section =
+  | "questions"
+  | "subs"
+  | "fortnite"
+  | "motorfest"
+  | "callofduty";
+
 type Props = {
-  selectedSection: "questions" | "subs";
+  selectedSection: Section;
 };
 
 export default function WheelSectionSelector({
@@ -20,10 +27,7 @@ export default function WheelSectionSelector({
         id="wheel-section"
         value={selectedSection}
         onChange={(event) => {
-          const section =
-            event.target.value === "subs"
-              ? "subs"
-              : "questions";
+          const section = event.target.value as Section;
 
           window.location.href = `/admin/roues?section=${section}`;
         }}
@@ -35,6 +39,18 @@ export default function WheelSectionSelector({
 
         <option value="subs">
           💜 Roues Subs
+        </option>
+
+        <option value="fortnite">
+          🎮 Fortnite
+        </option>
+
+        <option value="motorfest">
+          🏎️ The Crew Motorfest
+        </option>
+
+        <option value="callofduty">
+          🔫 Call of Duty
         </option>
       </select>
     </div>

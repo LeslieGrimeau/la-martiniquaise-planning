@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type WheelItem = {
   id: number;
@@ -20,6 +21,9 @@ const COLORS = [
 ];
 
 export default function RouesPage() {
+  const searchParams = useSearchParams();
+
+const wheelId = searchParams.get("wheelId") || "1";
   const [wheel, setWheel] = useState<WheelData | null>(null);
   const [items, setItems] = useState<WheelItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +36,11 @@ export default function RouesPage() {
     async function loadWheel() {
       try {
         const response = await fetch(
-          "/api/roues?wheelId=1",
-          {
-            cache: "no-store",
-          }
-        );
+  `/api/roues?wheelId=${wheelId}`,
+  {
+    cache: "no-store",
+  }
+);
 
         if (!response.ok) {
           throw new Error("Impossible de charger la roue");
@@ -265,22 +269,48 @@ setSpinning(false);
 
           <div className="relative mt-2">
   <select
-    defaultValue="questions"
-    onChange={(event) => {
-      if (event.target.value === "subs") {
-        window.location.href = "/roues/subs";
-      }
-    }}
-    className="cursor-pointer appearance-none rounded-2xl border border-pink-500/30 bg-[#09090f] px-6 py-3 pr-12 text-3xl font-black text-white outline-none transition hover:border-pink-400/60 focus:border-pink-400 md:text-5xl"
-  >
-    <option value="questions">
-      🎡 Roues Questions
-    </option>
+  value="questions"
+  onChange={(event) => {
+    const value = event.target.value;
 
-    <option value="subs">
-      💜 Roues Subs
-    </option>
-  </select>
+    if (value === "subs") {
+      window.location.href = "/roues/subs";
+    }
+
+    if (value === "fortnite") {
+      window.location.href = "/roues?wheelId=5";
+    }
+
+    if (value === "motorfest") {
+      window.location.href = "/roues?wheelId=6";
+    }
+
+    if (value === "callofduty") {
+      window.location.href = "/roues?wheelId=7";
+    }
+  }}
+  className="cursor-pointer appearance-none rounded-2xl border border-pink-500/30 bg-[#09090f] px-6 py-3 pr-12 text-3xl font-black text-white outline-none transition hover:border-pink-400/60 focus:border-pink-400 md:text-5xl"
+>
+  <option value="questions">
+    🎡 Roues Questions
+  </option>
+
+  <option value="subs">
+    💜 Roues Subs
+  </option>
+
+  <option value="fortnite">
+    🎮 Fortnite
+  </option>
+
+  <option value="motorfest">
+    🏎️ The Crew Motorfest
+  </option>
+
+  <option value="callofduty">
+    🔫 Call of Duty
+  </option>
+</select>
 
   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xl text-pink-300">
     ▼
