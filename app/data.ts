@@ -9,6 +9,7 @@ export const gameImages = {
   motorfest: "/images/games/motorfest.png",
   roblox: "/images/games/roblox.png",
   callOfDuty: "/images/games/call-of-duty.png",
+    cuisine: "/images/games/cuisine.png",
 };
 
 // 📅 PLANNING DE LA SEMAINE
@@ -195,6 +196,12 @@ export const games = [
     title: "Call of Duty",
     image: gameImages.callOfDuty,
     type: "FPS • Action",
+  },
+
+  {
+    title: "Cuisine",
+    image: gameImages.cuisine,
+    type: "Live cuisine • Recettes créoles",
   },
 ];
 

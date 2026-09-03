@@ -71,6 +71,11 @@ function createGameData(gameName: string) {
       image: "/images/games/call-of-duty.png",
     },
 
+        Cuisine: {
+      name: "Cuisine",
+      image: "/images/games/cuisine.png",
+    },
+
     Jeux: {
       name: "Jeux",
       emoji: "🎮",
